@@ -91,9 +91,15 @@ def insert_message(chat_id, message_id, date_ts):
     conn.close()
 
 
-def set_timer_reaction(chat_id, message_id, has_reaction: bool):
+def set_timer_reaction(chat_id, message_id, has_reaction: bool, date_ts: int | None = None):
+    """
+    Обновляет флаг has_timer_reaction.
+    Если запись для (chat_id, message_id) ещё не существует — создаёт её.
+    """
     conn = db_connect()
     cur = conn.cursor()
+
+    # Сначала пытаемся обновить существующую запись
     cur.execute(
         """
         UPDATE messages
@@ -102,6 +108,20 @@ def set_timer_reaction(chat_id, message_id, has_reaction: bool):
         """,
         (1 if has_reaction else 0, chat_id, message_id),
     )
+
+    # Если ничего не обновили — создаём запись
+    if cur.rowcount == 0:
+        if date_ts is None:
+            # если Telegram не прислал дату — берём текущее время
+            date_ts = int(datetime.now(ZoneInfo(TIMEZONE_NAME)).timestamp())
+        cur.execute(
+            """
+            INSERT INTO messages(chat_id, message_id, date, has_timer_reaction)
+            VALUES (?, ?, ?, ?)
+            """,
+            (chat_id, message_id, date_ts, 1 if has_reaction else 0),
+        )
+
     conn.commit()
     conn.close()
 
@@ -466,8 +486,17 @@ def extract_timer_reaction_from_reaction_count(rc: dict) -> tuple[int, int, bool
 
 def handle_message_reaction_count(update: dict):
     rc = update["message_reaction_count"]
+
+    # Отладка: смотрим, что реально присылает Telegram
+    try:
+        print("message_reaction_count update:", json.dumps(update, ensure_ascii=False))
+    except Exception:
+        # на всякий случай, чтобы print не уронил бота
+        print("message_reaction_count update (без json.dumps)")
+
     chat_id, message_id, has_timer = extract_timer_reaction_from_reaction_count(rc)
-    set_timer_reaction(chat_id, message_id, has_timer)
+    date_ts = rc.get("date")
+    set_timer_reaction(chat_id, message_id, has_timer, date_ts)
 
 
 def handle_message(update: dict):
