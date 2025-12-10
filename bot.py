@@ -11,7 +11,11 @@ load_dotenv()
 
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TIMEZONE_NAME = os.getenv("TIMEZONE", "Europe/Moscow")
+# основной «человеческий» смайл, который показываем в текстах
 TIMER_EMOJI = "⌛️"
+
+# список всех смайлов, которые для бота считаются «таймером»
+TIMER_EMOJIS = {TIMER_EMOJI, "⌛", "⏳", "🤡", "🔥"}  # сюда можно добавить любые ещё
 
 if not BOT_TOKEN:
     raise RuntimeError("Не задан TELEGRAM_BOT_TOKEN")
