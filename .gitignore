@@ -1,0 +1,7 @@
+# Не заливать на GitHub токены и локальную БД
+.env
+reminder_bot.db
+
+# Служебные файлы Python
+__pycache__/
+*.pyc
