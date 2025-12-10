@@ -448,12 +448,18 @@ def extract_timer_reaction_from_reaction_count(rc: dict) -> tuple[int, int, bool
     chat_id = rc["chat"]["id"]
     message_id = rc["message_id"]
     has_timer = False
+
     for item in rc.get("reactions", []):
         r_type = item.get("type", {})
+
+        # Обычный юникод-эмодзи
         emoji = r_type.get("emoji")
-        if emoji == TIMER_EMOJI and item.get("total_count", 0) > 0:
+        if emoji and emoji in TIMER_EMOJIS and item.get("total_count", 0) > 0:
             has_timer = True
             break
+
+        # Если когда-нибудь захотите учитывать кастомные эмодзи (premium),
+        # сюда можно будет добавить проверку r_type.get("custom_emoji_id").
     return chat_id, message_id, has_timer
 
 
