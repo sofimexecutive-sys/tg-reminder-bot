@@ -3,6 +3,7 @@ import time
 import sqlite3
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
+import json
 
 import requests
 from dotenv import load_dotenv
@@ -526,8 +527,18 @@ def main():
                     print(f"Ошибка при отправке сводки: {e}")
                 next_summary_time = next_10_msk(now)
 
+            allowed_updates = [
+                "message",
+                "channel_post",
+                "edited_channel_post",
+                "message_reaction",
+                "message_reaction_count",
+            ]
+
             params = {
                 "timeout": 30,
+                # Telegram ждёт JSON-строку с массивом типов апдейтов
+                "allowed_updates": json.dumps(allowed_updates),
             }
             if offset is not None:
                 params["offset"] = offset
