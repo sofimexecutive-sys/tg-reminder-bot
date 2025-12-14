@@ -26,7 +26,7 @@ API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}"
 
 # ---------- База данных ----------
 
-DB_PATH = "reminder_bot.db"
+DB_PATH = "/var/data/reminder_bot.db"
 
 
 def init_db():
